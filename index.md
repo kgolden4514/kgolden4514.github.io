@@ -1,5 +1,3 @@
-Here you can say lots of fun things about your site.
+This is a blog for ST 558 at NCSU.
 
-Maybe say a some things about yourself.
-
-Or maybe what you plan to blog about.
+I am a MS Statistics student at NCSU. I have been a high school math teacher for 13 years.
