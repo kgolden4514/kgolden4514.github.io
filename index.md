@@ -17,7 +17,7 @@ Needless to say I live a very busy life.
 ![T3HymnpyQqq20QhZLvIleA](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/06a58fd8-3b7f-4b12-9645-cf21d430efb9)
 
 # Summer Internship  
-I am very glad to be taking this class this summer. This summer, I am working as a statistical intern for the US Navy. There is an expectation that I can use R on the basic level. I have used R for several classes, but I have never learned how to code intuitively. I know this class is going to help me be succesfful during my internship. 
+I am very glad to be taking this class this summer. This summer, I am working as a statistical intern for the US Navy. There is an expectation that I can use R on the basic level. I have used R for several classes, but I have never learned how to code intuitively. I know this class is going to help me be successful during my internship. 
 
 The internship I am working this summer has real potential to become a new career for me. I will be working with logisticians to analyze data gathered on the brand new H-53K King Stallions.  
 [H-53K Wikipedia](https://en.wikipedia.org/wiki/Sikorsky_CH-53K_King_Stallion)  
