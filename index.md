@@ -22,3 +22,4 @@ I am very glad to be taking this class this summer. This summer, I am working as
 The internship I am working this summer has real potential to become a new career for me. I will be working with logisticians to analyze data gathered on the brand new H-53K King Stallions.  
 ![H-53K Wikipedia](https://en.wikipedia.org/wiki/Sikorsky_CH-53K_King_Stallion)  
 <img width="550" alt="H53K" src="https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/7f12f093-4814-4ee8-9ad8-2e7fea886805">
+![Picture Source](https://www.navy.mil/Press-Office/News-Stories/Article/3179880/collaboration-enhances-successful-ch-53k-flight-control-system/)
