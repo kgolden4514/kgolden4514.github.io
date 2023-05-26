@@ -1,10 +1,9 @@
 I will be blogging about questions pretaining to ST 558. 
 
 # Basic information about me 
-My name is Kristina Golden, and I am a student in the MS Statistics program at NCSU.
+My name is Kristina Golden, and I am a student in the MS Statistics program at NCSU. My email is kmadams6@ncsu.edu.
 
-I currently work as an AP Statistics/NC Math 4 teacher at a high school in Eastern North Carolina. I hold many additional roles at the school I work at:
-
+I currently work as an AP Statistics/NC Math 4 teacher at a high school in Eastern North Carolina. I hold many additional roles at the school I work at:  
 1. I am the BT coordinator. This means I run the mentor program for teachers with less than 3 years of experience.
 2. To help my collegues pursue their National Board Certification, I facilitate professional development.
 3. I am an active member of my school's Strategic Planning Meeting.
