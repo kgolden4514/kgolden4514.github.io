@@ -33,5 +33,6 @@ internship.
 
 plot(Nile)
 ```
+<img width="455" alt="image" src="https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/28635149-5958-4f9e-9722-8c3fe7b6e3b0">
 
 ![](C:/R/Repos/kgolden4514.github.io/imagesunnamed-chunk-3-1.png)<!-- -->
