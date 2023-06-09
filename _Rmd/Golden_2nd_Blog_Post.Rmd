@@ -2,10 +2,24 @@
 title: "Programming Background"
 author: "Kristina Golden"
 date: "2023-06-07"
+output:
+  github_document:
+    html_preview: false
 ---
+```{r eval=FALSE, include=FALSE}
+setwd("C:/R/Repos/kgolden4514.github.io")
+
+library(rmarkdown)
+rmarkdown::render("C:/R/Repos/kgolden4514.github.io/_Rmd/Golden_2nd_Blog_Post.Rmd", 
+              output_format = "github_document",
+              output_file = NULL,
+              output_dir = "C:/R/Repos/kgolden4514.github.io/_posts"
+            )
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.path = 'C:/R/Repos/kgolden4514.github.io/images')
 ```
 
 ## Kristina Golden's Programming Background

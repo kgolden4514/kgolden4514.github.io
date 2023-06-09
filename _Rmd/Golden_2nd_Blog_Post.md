@@ -34,4 +34,4 @@ internship.
 plot(Nile)
 ```
 
-![](C:/R/Repo/_posts/Golden_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](C:/R/Repos/kgolden4514.github.io/imagesunnamed-chunk-2-1.png)<!-- -->
