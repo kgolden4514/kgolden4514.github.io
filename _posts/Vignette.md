@@ -1,0 +1,1565 @@
+Project 1
+================
+Kristina Golden
+2023-06-23
+
+- <a href="#required-packages" id="toc-required-packages">Required
+  packages</a>
+- <a href="#functions" id="toc-functions">Functions</a>
+  - <a href="#company_quan"
+    id="toc-company_quan"><code>company_quan</code></a>
+  - <a href="#exchange" id="toc-exchange"><code>exchange</code></a>
+  - <a href="#company_cat" id="toc-company_cat"><code>company_cat</code></a>
+  - <a href="#market" id="toc-market"><code>market</code></a>
+  - <a href="#ticker_type" id="toc-ticker_type"><code>ticker_type</code></a>
+  - <a href="#company_comb"
+    id="toc-company_comb"><code>company_comb</code></a>
+  - <a href="#finapi" id="toc-finapi"><code>finAPI</code></a>
+- <a href="#data-exploration" id="toc-data-exploration">Data
+  Exploration</a>
+- <a href="#wrap-up" id="toc-wrap-up">Wrap-up</a>
+
+This document is a vignette to show how to retrieve data from an API. To
+show this, I will be using the polygon.io API. Ths API pulls financial
+information from the stock market.
+
+I will be building functions to pull data from different endpoints of
+the API.
+
+My functions will use a variety of arguments to get differing return
+data. All data points include the company’s ticker and the company name.
+A company can be quiered by their ticket symbol and/or their company
+name. I have made it so the company name is not case sensitive.
+
+# Required packages
+
+``` r
+library(rmarkdown)
+library(httr)
+library(jsonlite)
+library(tidyverse)
+library(kableExtra)
+library(ggplot2)
+API_KEY <- Sys.setenv("API_KEY" =
+                        "_aL5f5EmEje0vL6kYr1xOPtgR8e9rGwT")
+```
+
+I used the following packages:
+
+tidyverse: data manipulation and visualization  
+jsonlite: API interaction  
+httr: API interaction through the GET function  
+knitr: displaying tables in a markdown friendly way  
+ggplot2: Dynamic graphs
+
+# Functions
+
+Functions created to interact with the API
+
+## `company_quan`
+
+The `company_quan` function allows us to query the API by ticker symbol
+or company name. The data retrieved is various quantitative data about
+the company (ie prev day high price).
+
+``` r
+#Function for company name quantitative
+#DONT CHANGE THIS ONE
+company_quan <- function(company = "all"){
+  getwd()
+  setwd('C:/Users/kmada/OneDrive - Onslow County Schools/3. ST 558/6a. Projects/Project1')
+  url <- "https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers"
+  query_list <- list(apiKey =
+                       Sys.getenv("API_KEY"))
+  my_data <- GET(url, query = query_list)
+  parsed <- fromJSON(rawToChar(my_data$content))
+  options <- as.data.frame(parsed$tickers)
+  options <- options %>% unnest('day')
+      options <- rename(options, 
+                 Day_Open_Price = o, 
+                 Day_High_Price = h,
+                 Day_Low_Price = l,
+                 Day_Close_Price = c,
+                 d1 = v,
+                 d2 = vw)
+      options <- options %>% unnest('prevDay')
+      options <- rename(options, 
+                  Prev_Open_Price = o, 
+                  Prev_High_Price = h,
+                  Prev_Low_Price = l,
+                  Prev_Close_Price = c,
+                  PerChange_Since_Prev =
+                    todaysChangePerc,
+                  ValChange_Sine_Prev = todaysChange,
+                  d3 = v,
+                  d4 = vw)
+      options <- options %>% unnest('min')
+      options <- as_tibble(options[-c(4, 9:18, 23:24)])
+      names <- read.csv("company_names.csv")
+      names <- rename(names, ticker = Symbol,
+                             name = Name)
+      names <- as_tibble(names[-c(3:5)])
+      options <- merge(options, names, by = 'ticker')
+      options <- options[c(1, 12, 2:11)]
+  
+    if (company != "all"){
+    
+    if (toupper(company) %in% options$ticker){
+      options <- options %>%
+        filter(ticker == toupper(company))
+    }
+    
+    else if (toupper(company) %in% options$Name){
+      output <- options %>%
+        filter(Name == toupper(company))
+    }
+    # Otherwise, throw an informative error.
+    else {
+      message <- paste('ERROR: Argument for company was
+                       not found in the ticker or the
+                       name column. Returning all
+                       companies.')
+                       
+    }
+  }
+  # Do nothing if the company value equals "all".
+  else {
+    
+  output <- as.data.frame(options)
+  # Return the output data.frame.
+  return(output)
+  }
+}
+c <- company_quan()
+```
+
+## `exchange`
+
+The `exchange` function allows us to query the API by which stock
+exchange we are interested in. The data retrieved are various
+categorical variables of companies that trade in the queried Stock
+exchange. (ie type, company name, ticker). Examples of arguments include
+“xnys”
+
+``` r
+#Market, locale, primary exchange, type, and currency_name by
+#exchange
+#DONT CHANGE THIS ONE
+exchange <- function(exchange = "all"){
+  url <- "https://api.polygon.io/v3/reference/tickers?active=true&limit=1000"
+  query_list <- list(apiKey =
+                       Sys.getenv("API_KEY"))
+  my_data <- GET(url, query = query_list)
+  parsed <- fromJSON(rawToChar(my_data$content))
+  options <- as.data.frame(parsed$results)
+  options$name <- toupper(options$name)
+  options$market <- toupper(options$market)
+  options <- options[-c(4, 7:12)]
+  
+    if (exchange != "all"){
+    
+    if (toupper(exchange) %in% options$primary_exchange){
+      options <- options %>%
+        filter(primary_exchange == toupper(exchange))
+    }
+    
+    # Otherwise, throw an informative error.
+    else {
+      message <- paste('ERROR: Argument for exchange was
+                       not found in the exchange column.
+                       Returning all
+                       exchanges')
+                       
+    }
+  }
+  # Do nothing if the company value equals "all".
+  else {
+    
+  output <- as.data.frame(options)
+  # Return the output data.frame.
+  return(output)
+  }
+}
+e <- exchange('xnys')
+```
+
+## `company_cat`
+
+The `company_cat` function allows us to query the API by ticker symbol
+or company name. The data retrieved is various categorical data about
+the company (ie stock exchange, type, market). The company name or
+ticker symbol is the argument.
+
+``` r
+#Market, locale, primary exchange, type, and currency_name by
+#company
+company_cat <- function(query = "all") {
+  url <- "https://api.polygon.io/v3/reference/tickers"
+  
+  query_list <- list(active = "true", limit = 1000, apiKey =
+                       Sys.getenv("API_KEY"))
+  
+  if (query != "all") {
+    query_list$q <- query
+  }
+  
+  my_data <- GET(url, query = query_list)
+  
+  if (http_status(my_data)$category == "Success") {
+    parsed <- fromJSON(rawToChar(my_data$content))
+    results <- as.data.frame(parsed$results)
+    
+    if (nrow(results) > 0) {
+      results <-as.data.frame(sapply(results, toupper))
+      results <- results[-c(7, 9:12)]
+      results <- results %>%
+        filter(ticker == toupper(query) | 
+                 name == toupper(query))
+    }
+    return(as_tibble(results))
+    
+  } 
+  else {
+    stop("Error retrieving data from the API.")
+  }
+}
+```
+
+## `market`
+
+The `market` function allows us to query the API by which market we are
+interested in. The data retrieved are various categorical variables of
+companies in a particular market. It’s arguments include OTC and STOCKS.
+(ie type, company name, ticker, stock exchange).
+
+``` r
+#Market, locale, primary exchange, type, and currency_name by
+#market
+market <- function(query = "all") {
+  url <- "https://api.polygon.io/v3/reference/tickers"
+  
+  query_list <- list(active = "true", limit = 1000, apiKey =
+                       Sys.getenv("API_KEY"))
+  
+  if (query != "all") {
+    query_list$q <- query
+  }
+  
+  my_data <- GET(url, query = query_list)
+  
+  if (http_status(my_data)$category == "Success") {
+    parsed <- fromJSON(rawToChar(my_data$content))
+    results <- as.data.frame(parsed$results)
+    
+    if (nrow(results) > 0) {
+      results <-as.data.frame(sapply(results, toupper))
+      results <- results[-c(7, 9:12)]
+      results <- results %>%
+        filter(market == toupper(query))
+    }
+    return(as_tibble(results))
+    
+  } 
+  else {
+    stop("Error retrieving data from the API.")
+  }
+}
+```
+
+## `ticker_type`
+
+The `ticker_type` function allows us to query the API by which type we
+are interested in. The data retrieved are various categorical variables
+of companies that trade the queried type. It takes on the arguments CS,
+UNIT, etc. (ie market, company name, ticker, stock exchange).
+
+``` r
+#Market, locale, primary exchange, type, and currency_name by
+#type
+ticker_type <- function(query = "all") {
+  url <- "https://api.polygon.io/v3/reference/tickers"
+  
+  query_list <- list(active = "true", limit = 1000, apiKey =
+                       Sys.getenv("API_KEY"))
+  
+  if (query != "all") {
+    query_list$q <- query
+  }
+  
+  my_data <- GET(url, query = query_list)
+  
+  if (http_status(my_data)$category == "Success") {
+    parsed <- fromJSON(rawToChar(my_data$content))
+    results <- as.data.frame(parsed$results)
+    
+    if (nrow(results) > 0) {
+      results <-as.data.frame(sapply(results, toupper))
+      results <- results[-c(7, 9:12)]
+      results <- results %>%
+        filter(type == toupper(query))
+    }
+    return(as_tibble(results))
+    
+  } 
+  else {
+    stop("Error retrieving data from the API.")
+  }
+}
+```
+
+## `company_comb`
+
+The `company_comb` function combines the quantitative variables and
+categorical variables for specific companies. It quieries by company
+name or ticker symbol.
+
+``` r
+company_comb <- function(company = "all"){
+  url <- "https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers"
+  query_list <- list(apiKey =
+                       Sys.getenv("API_KEY"))
+  my_data <- GET(url, query = query_list)
+  parsed <- fromJSON(rawToChar(my_data$content))
+  options <- as.data.frame(parsed$tickers)
+  options <- options %>% unnest('day')
+      options <- rename(options, 
+                 Day_Open_Price = o, 
+                 Day_High_Price = h,
+                 Day_Low_Price = l,
+                 Day_Close_Price = c,
+                 d1 = v,
+                 d2 = vw)
+      options <- options %>% unnest('prevDay')
+      options <- rename(options, 
+                  Prev_Open_Price = o, 
+                  Prev_High_Price = h,
+                  Prev_Low_Price = l,
+                  Prev_Close_Price = c,
+                  PerChange_Since_Prev =
+                    todaysChangePerc,
+                  ValChange_Sine_Prev = todaysChange,
+                  d3 = v,
+                  d4 = vw)
+      options <- options %>% unnest('min')
+      options <- as_tibble(options[-c(4, 9:18, 23:24)])
+      cat <- url <- "https://api.polygon.io/v3/reference/tickers"
+  
+  query_list <- list(active = "true", limit = 1000, apiKey =
+                       Sys.getenv("API_KEY"))
+  my_data <- GET(url, query = query_list)
+  parsed <- fromJSON(rawToChar(my_data$content))
+  options2 <- as.data.frame(parsed$results)
+      options2 <- as_tibble(options2[-c(4, 7:12)])
+      options <- merge(options, options2, by = 'ticker')
+      options <- options[c(1, 12:15, 2:11)]
+  
+    if (company != "all"){
+    
+    if (toupper(company) %in% options$ticker){
+      options <- options %>%
+        filter(ticker == toupper(company))
+    }
+    
+    else if (toupper(company) %in% options$Name){
+      output <- options %>%
+        filter(Name == toupper(company))
+    }
+    # Otherwise, throw an informative error.
+    else {
+      message <- paste('ERROR: Argument for company was
+                       not found in the ticker or the
+                       name column. Returning all
+                       companies.')
+                       
+    }
+  }
+  # Do nothing if the company value equals "all".
+  else {
+    
+  output <- as.data.frame(options)
+  # Return the output data.frame.
+  return(output)
+  }
+}
+c <- company_comb()
+```
+
+## `finAPI`
+
+This function is a wrapper function for all the others above. You simply
+pass the name of the function you want to use, like “company_comb”, and
+any additional arguments for that function.
+
+``` r
+finAPI <- function(func, ...){
+  
+  if (func == "company_quan"){
+    output <- company_quan(...)
+  }
+  else if (func == "exchange"){
+    output <- exchange(...)
+  }
+  else if (func == "company_cat"){
+    output <- company_cat(...)
+  }
+  else if (func == "market"){
+    output1 <- market('stocks')
+    output2 <- market('otc')
+    output <- rbind(output1, output2)
+  }
+  else if (func == "ticker_type"){
+    output1 <- ticker_type('CS')
+    output2 <- ticker_type('ETF')
+    output3 <- ticker_type('UNIT')
+    output4 <- ticker_type('ADRC')
+    output5 <- ticker_type('ETC')
+    output6 <- ticker_type('FUND')
+    output7 <- ticker_type('GDR')
+    output8 <- ticker_type('OS')
+    output9 <- ticker_type('OTHER')
+    output10 <- ticker_type('PFD')
+    output11 <- ticker_type('RIGHT')
+    output12 <- ticker_type('SP')
+    output13 <- ticker_type('WARRANT')
+    output <- rbind(output1, output2, output3, output4,
+                    output5, output6, output7, output8,
+                    output9, output10, output11, output12,
+                    output13)
+  }
+  else if (func == "company_comb"){
+    output <- company_comb(...)
+  }
+  
+  else {
+    stop("ERROR: Argument for func is not valid!")
+  }
+  
+  # Return the output from the appropriate function.
+  return(output)
+}
+```
+
+# Data Exploration
+
+Now that we are able to retrieve data from the polygon.io API, we are
+able to do some data exploration. I will begin by pulling all the
+different market types. I will do this by \`finAPI(‘market’).
+
+``` r
+fin_market <- finAPI('market')
+```
+
+I am interested in market and type. I am interested to see if stocks has
+the same types as otc. I will compare the frequencies with contingency
+tables. I am also interested to see if the stock exchange the ticker is
+traded on has anything to do with the market and type.
+
+``` r
+#Contingency table for market
+market_tab <- addmargins(table(fin_market$market))
+names(dimnames(market_tab)) <- c("Market")
+market_tab <- knitr::kable((market_tab),
+                    caption=paste("Financial Info By Market"))
+market_tab
+```
+
+<table>
+<caption>
+Financial Info By Market
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Market
+</th>
+<th style="text-align:right;">
+Freq
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+OTC
+</td>
+<td style="text-align:right;">
+608
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+STOCKS
+</td>
+<td style="text-align:right;">
+392
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sum
+</td>
+<td style="text-align:right;">
+1000
+</td>
+</tr>
+</tbody>
+</table>
+
+``` r
+type_tab <- addmargins(table(fin_market$type))
+names(dimnames(type_tab)) <- c("Type")
+type_tab <- knitr::kable((type_tab),
+                    caption=paste("Financial Info By type"))
+type_tab
+```
+
+<table>
+<caption>
+Financial Info By type
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Type
+</th>
+<th style="text-align:right;">
+Freq
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+ADRC
+</td>
+<td style="text-align:right;">
+89
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CS
+</td>
+<td style="text-align:right;">
+398
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ETF
+</td>
+<td style="text-align:right;">
+48
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ETS
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ETV
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FUND
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+GDR
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+OS
+</td>
+<td style="text-align:right;">
+275
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+OTHER
+</td>
+<td style="text-align:right;">
+33
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PFD
+</td>
+<td style="text-align:right;">
+54
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RIGHT
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SP
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+UNIT
+</td>
+<td style="text-align:right;">
+27
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+WARRANT
+</td>
+<td style="text-align:right;">
+40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sum
+</td>
+<td style="text-align:right;">
+1000
+</td>
+</tr>
+</tbody>
+</table>
+
+``` r
+market_type_tab <- addmargins(table(fin_market$type,
+                                fin_market$market))
+names(dimnames(market_type_tab)) <- c("Type", "Market")
+market_type_tab <- knitr::kable((market_type_tab),
+                    caption=paste("Financial Info By type and 
+                                  Market"))
+market_type_tab
+```
+
+<table>
+<caption>
+Financial Info By type and Market
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+OTC
+</th>
+<th style="text-align:right;">
+STOCKS
+</th>
+<th style="text-align:right;">
+Sum
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+ADRC
+</td>
+<td style="text-align:right;">
+72
+</td>
+<td style="text-align:right;">
+17
+</td>
+<td style="text-align:right;">
+89
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CS
+</td>
+<td style="text-align:right;">
+178
+</td>
+<td style="text-align:right;">
+220
+</td>
+<td style="text-align:right;">
+398
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ETF
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+44
+</td>
+<td style="text-align:right;">
+48
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ETS
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ETV
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FUND
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+GDR
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+OS
+</td>
+<td style="text-align:right;">
+275
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+275
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+OTHER
+</td>
+<td style="text-align:right;">
+33
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+33
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PFD
+</td>
+<td style="text-align:right;">
+21
+</td>
+<td style="text-align:right;">
+33
+</td>
+<td style="text-align:right;">
+54
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RIGHT
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SP
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+UNIT
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+21
+</td>
+<td style="text-align:right;">
+27
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+WARRANT
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:right;">
+31
+</td>
+<td style="text-align:right;">
+40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sum
+</td>
+<td style="text-align:right;">
+608
+</td>
+<td style="text-align:right;">
+392
+</td>
+<td style="text-align:right;">
+1000
+</td>
+</tr>
+</tbody>
+</table>
+
+I would like to know on average what are the opening prices of stocks?
+What are the average closing prices? What about the change in price from
+one day to the next? The averages of the variables of interest do not
+exist, therefore I will create them as variables.
+
+I will begin by quering the combined quantitative and categorical
+variables.
+
+``` r
+#Create data frame for combined data.
+
+fin_comb <- finAPI('company_comb')
+```
+
+``` r
+#Calculate averages for each quantitative variable
+fin_comb <- mutate(fin_comb, AvgPerChange_Since_Prev =
+                mean(PerChange_Since_Prev),
+              AvgValChange_Since_Prev =
+                mean(ValChange_Sine_Prev),
+              AvgDay_Open_Price = mean(Day_Open_Price),
+              AvgDay_High_Price = mean(Day_High_Price),
+              AvgDay_Low_Price = mean(Day_Low_Price),
+              AvgDay_Close_Price = mean(Day_Close_Price),
+              AvgPrev_Open_Price = mean(Prev_Open_Price),
+              AvgPrev_High_Price = mean(Prev_High_Price),
+              AvgPrev_Low_Price = mean(Prev_Low_Price),
+              AvgPrev_Close_Price = mean(Prev_Close_Price))
+fin_comb <- fin_comb[, c(1:5, 6, 16, 7, 17, 8, 18, 9, 19, 10,
+                         20, 11, 21, 12, 22, 13, 23, 14, 24,
+                         15, 25)]
+fin_comb[1:2,]
+```
+
+    ##   ticker                      name market primary_exchange type
+    ## 1      A Agilent Technologies Inc. stocks             XNYS   CS
+    ## 2     AA         Alcoa Corporation stocks             XNYS   CS
+    ##   PerChange_Since_Prev AvgPerChange_Since_Prev ValChange_Sine_Prev
+    ## 1            0.6235254              -0.5144377                0.74
+    ## 2           -2.0652499              -0.5144377               -0.69
+    ##   AvgValChange_Since_Prev Day_Open_Price AvgDay_Open_Price Day_High_Price
+    ## 1              -0.2787398         117.76          27.94707         119.71
+    ## 2              -0.2787398          32.73          27.94707          33.30
+    ##   AvgDay_High_Price Day_Low_Price AvgDay_Low_Price Day_Close_Price
+    ## 1          28.22699        117.58         27.65474          119.42
+    ## 2          28.22699         32.55         27.65474           32.84
+    ##   AvgDay_Close_Price Prev_Open_Price AvgPrev_Open_Price Prev_High_Price
+    ## 1           27.89395          118.84           28.37596          118.95
+    ## 2           27.89395           33.80           28.37596           33.95
+    ##   AvgPrev_High_Price Prev_Low_Price AvgPrev_Low_Price Prev_Close_Price
+    ## 1           28.64694         117.17          28.06147           118.68
+    ## 2           28.64694          32.81          28.06147            33.41
+    ##   AvgPrev_Close_Price
+    ## 1            28.41585
+    ## 2            28.41585
+
+This allows me to see that on average, the percent change since the
+previous is negative, therefore indicating a fall in price.
+
+I would like to graphically compare the different types by which stock
+exchange it is traded on. I will do this with a barchart.
+
+I will begin by quering from the API by ticker_type.
+
+``` r
+#Query by ticker_type
+types <- finAPI('ticker_type')
+```
+
+I will then create a barchart that allows me to compare the different
+types based on what stock exchange they are traded on.
+
+``` r
+#Barchart for type
+types <- types %>% drop_na(primary_exchange)
+g <- ggplot(types, aes(x = type))
+g <- g + geom_bar(aes(fill = as.factor(primary_exchange))) +
+    labs(x = "Exchange", title = "Bar Plot of Type of
+         Stocks") + 
+    scale_x_discrete(guide = guide_axis(angle = 45)) +
+    scale_fill_discrete(name = 'Exchange') +
+    theme(plot.title=element_text(hjust=0.5))
+g
+```
+
+![](Vignette_files/figure-gfm/unnamed-chunk-14-1.png)<!-- --> I quickly
+see that CS is traded mainly on the XNYS and XNAS exchanges. I can also
+see the only type the ARCX trades is the ETF.
+
+I would like to compare day low price by which stock exchange it is
+traded with I will do this through a histogram. I will begin by creating
+a dataframe with the combined quantitative and categorical variables.
+
+``` r
+#Create dataframe
+fin_comb <- finAPI("company_comb")
+```
+
+I will then create a histogram.
+
+``` r
+#Histogram between day low price and exchange
+g <- ggplot(fin_comb, aes(Day_Low_Price,
+                          y=after_stat(density),
+                          fill=primary_exchange)) + 
+  # Add a semi-transparent histogram with 10 bins for XNYS.
+  geom_histogram(data=subset(fin_comb, 
+                             primary_exchange == 'XNYS'),
+                              bins=10, alpha = 0.5) +
+  # Add a semi-transparent histogram with 10 bins for XNAS.
+  geom_histogram(data=subset(fin_comb, 
+                             primary_exchange =='XNAS'),
+                             bins=10, alpha = 0.5) + 
+  # Add a better legend label.
+  guides(fill=guide_legend(title="Exchange")) +
+  # Add labels to the axes.
+  scale_x_continuous("Day Low Price") + 
+  scale_y_continuous("Density") +
+  # Add a title.
+  ggtitle("Histogram of Day Low Price by Exchange") +
+  theme(plot.title=element_text(hjust=0.5))
+g
+```
+
+![](Vignette_files/figure-gfm/unnamed-chunk-16-1.png)<!-- --> This
+histogram shows that both the day low price for XNAS and XNYS are skewed
+to the right. I can also see that XNAS has a higher density of the lower
+day low price.
+
+I wiould like to compare the percent change since the previous day by
+which type a company is traded as. I will use the same data base created
+previously.
+
+``` r
+#Histogram between percent change since previous day and Type.
+fin_comb <- finAPI("company_comb")
+
+#Histogram for type
+g <- ggplot(fin_comb, aes(PerChange_Since_Prev,
+                          y=after_stat(density),
+                          fill=type)) + 
+  # Add a semi-transparent histogram with 10 bins for XNYS.
+  geom_histogram(data=subset(fin_comb, 
+                             type == 'CS'),
+                              bins=20, alpha = 0.5) +
+  # Add a semi-transparent histogram with 10 bins for XNAS.
+  geom_histogram(data=subset(fin_comb, 
+                             type =='ETF'),
+                             bins=20, alpha = 0.5) + 
+  # Add a better legend label.
+  guides(fill=guide_legend(title="Type")) +
+  # Add labels to the axes.
+  scale_x_continuous("Percent Change Since Previous Day") + 
+  scale_y_continuous("Density") +
+  # Add a title.
+  ggtitle("Histogram of Percent Change Since Previous Day By
+          Type") +
+  theme(plot.title=element_text(hjust=0.5))
+g
+```
+
+![](Vignette_files/figure-gfm/unnamed-chunk-17-1.png)<!-- --> I can
+quickly see that the ETF has a much smaller variation than the CS.
+
+To compare day high price between exchanges, I will use a boxplot. I
+will continue to use the same data frame from before.
+
+``` r
+#Boxplot for Day High Price for XNAS and XNYS
+fin_comb <- subset(fin_comb, primary_exchange == 'XNYS' | 
+                     primary_exchange == 'XNAS')
+g <- ggplot(fin_comb, 
+               aes(primary_exchange,
+                   Day_High_Price,
+                   color=primary_exchange)) +
+  # Add the box plot layer.
+  geom_boxplot() + 
+  # Jitter the points to add a little more info to the boxplot.
+  geom_jitter() + 
+  # Add labels to the axes.
+  scale_x_discrete("Exchange") + 
+  scale_y_continuous("Day High Price") +
+  # Add a title.
+  ggtitle("Day High Price by Exchange") + 
+  # Remove the legend because it isn't needed.
+  theme(legend.position="none")
+
+# Display the plot.
+g
+```
+
+![](Vignette_files/figure-gfm/unnamed-chunk-18-1.png)<!-- --> I can see
+that both exchanges have majority of their day high prices at relatively
+low values, but they both have several upper outliers, with XNAS being
+the higher of the two. XYS has a larger IQR than XNAS.
+
+I suspect their is a strong, positive linear relationship between day
+low price and day high price. It would stand to reason that if the day
+price begins high, then the price at the end of the day would also be
+high. To visually investigate this, with no statistical significance, I
+will create a scatterplot between the two variables. I will continue to
+use the data frame from before.
+
+``` r
+#Scatterplot for Scatterplot for Lowest Price for the Day 
+#vs. Highest Price for the Day
+fin_com <- company_comb()
+ggplot(fin_com, aes(x=Day_Low_Price, y=Day_High_Price)) +
+  geom_point(size = 2,
+             position=position_jitter(width=3,height=2), color
+             = '#8b0a50') +
+  xlab('Lowest Price for the Day') +
+  ylab('Highest Price for the Day') +
+  labs(title = 'Scatterplot for Lowest Price for the Day
+       vs. Highest Price for the Day') +
+  theme(plot.title=element_text(hjust=0.5)) 
+```
+
+![](Vignette_files/figure-gfm/unnamed-chunk-19-1.png)<!-- --> My
+suspicians have been visually confirmed.
+
+I would like to summarize the day open price by type. I will do this
+through the 5 number summary. I will continue to use my data frame
+created earlier.
+
+``` r
+#Summarize Day Open Price by type
+fin_comb <- finAPI('company_comb')
+Open_FiveNum <- fin_comb %>% 
+  # Select the type and price columns.
+  select(type, Day_Open_Price) %>%
+  # Group by type.
+  group_by(type) %>%
+  # Get summary statistics for price.
+  summarize("Min." = min(Day_Open_Price),
+            "Q1" = quantile(Day_Open_Price, 0.25,
+                                      na.rm=TRUE),
+            "Median" = quantile(Day_Open_Price, 0.5,
+                                na.rm=TRUE),
+            "Q3" = quantile(Day_Open_Price, 0.75,
+                                      na.rm=TRUE),
+            "Max" = max(Day_Open_Price))
+
+Open_FiveNum <- knitr::kable(Open_FiveNum, 
+             caption="Five-Number Summary for Day Open Price
+             by Type",
+             digits=2)
+Open_FiveNum
+```
+
+<table>
+<caption>
+Five-Number Summary for Day Open Price by Type
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+type
+</th>
+<th style="text-align:right;">
+Min.
+</th>
+<th style="text-align:right;">
+Q1
+</th>
+<th style="text-align:right;">
+Median
+</th>
+<th style="text-align:right;">
+Q3
+</th>
+<th style="text-align:right;">
+Max
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+ADRC
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.96
+</td>
+<td style="text-align:right;">
+1.15
+</td>
+<td style="text-align:right;">
+2.27
+</td>
+<td style="text-align:right;">
+22.26
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CS
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+2.17
+</td>
+<td style="text-align:right;">
+10.49
+</td>
+<td style="text-align:right;">
+39.99
+</td>
+<td style="text-align:right;">
+472.95
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ETF
+</td>
+<td style="text-align:right;">
+8.43
+</td>
+<td style="text-align:right;">
+23.93
+</td>
+<td style="text-align:right;">
+30.51
+</td>
+<td style="text-align:right;">
+46.51
+</td>
+<td style="text-align:right;">
+107.19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ETS
+</td>
+<td style="text-align:right;">
+20.95
+</td>
+<td style="text-align:right;">
+24.06
+</td>
+<td style="text-align:right;">
+27.16
+</td>
+<td style="text-align:right;">
+27.24
+</td>
+<td style="text-align:right;">
+27.31
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ETV
+</td>
+<td style="text-align:right;">
+26.36
+</td>
+<td style="text-align:right;">
+26.36
+</td>
+<td style="text-align:right;">
+26.36
+</td>
+<td style="text-align:right;">
+26.36
+</td>
+<td style="text-align:right;">
+26.36
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FUND
+</td>
+<td style="text-align:right;">
+5.17
+</td>
+<td style="text-align:right;">
+9.44
+</td>
+<td style="text-align:right;">
+12.37
+</td>
+<td style="text-align:right;">
+16.43
+</td>
+<td style="text-align:right;">
+19.37
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PFD
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+17.55
+</td>
+<td style="text-align:right;">
+19.76
+</td>
+<td style="text-align:right;">
+22.65
+</td>
+<td style="text-align:right;">
+25.55
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RIGHT
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.10
+</td>
+<td style="text-align:right;">
+0.21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SP
+</td>
+<td style="text-align:right;">
+17.92
+</td>
+<td style="text-align:right;">
+20.99
+</td>
+<td style="text-align:right;">
+23.59
+</td>
+<td style="text-align:right;">
+24.31
+</td>
+<td style="text-align:right;">
+81.21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+UNIT
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+10.42
+</td>
+<td style="text-align:right;">
+11.20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+WARRANT
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.01
+</td>
+<td style="text-align:right;">
+0.06
+</td>
+<td style="text-align:right;">
+0.12
+</td>
+<td style="text-align:right;">
+0.98
+</td>
+</tr>
+</tbody>
+</table>
+
+I would like to summarize the day open price by exchange. I will do this
+through the 5 number summary. I will continue to use my data frame
+created earlier.
+
+``` r
+#Summarize Day Open Price by Exchange
+fin_comb <- finAPI('company_comb')
+Open_FiveNum <- fin_comb %>% 
+  # Select the type and price columns.
+  select(primary_exchange, Day_Open_Price) %>%
+  # Group by type.
+  group_by(primary_exchange) %>%
+  # Get summary statistics for price.
+  summarize("Min." = min(Day_Open_Price),
+            "Q1" = quantile(Day_Open_Price, 0.25,
+                                      na.rm=TRUE),
+            "Median" = quantile(Day_Open_Price, 0.5,
+                                na.rm=TRUE),
+            "Q3" = quantile(Day_Open_Price, 0.75,
+                                      na.rm=TRUE),
+            "Max" = max(Day_Open_Price))
+
+Open_FiveNum <- knitr::kable(Open_FiveNum, 
+             caption="Five-Number Summary for Day Open Price
+             by Exchange",
+             digits=2)
+Open_FiveNum
+```
+
+<table>
+<caption>
+Five-Number Summary for Day Open Price by Exchange
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+primary_exchange
+</th>
+<th style="text-align:right;">
+Min.
+</th>
+<th style="text-align:right;">
+Q1
+</th>
+<th style="text-align:right;">
+Median
+</th>
+<th style="text-align:right;">
+Q3
+</th>
+<th style="text-align:right;">
+Max
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+ARCX
+</td>
+<td style="text-align:right;">
+13.43
+</td>
+<td style="text-align:right;">
+23.93
+</td>
+<td style="text-align:right;">
+26.17
+</td>
+<td style="text-align:right;">
+40.27
+</td>
+<td style="text-align:right;">
+107.19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+BATS
+</td>
+<td style="text-align:right;">
+8.43
+</td>
+<td style="text-align:right;">
+11.63
+</td>
+<td style="text-align:right;">
+24.96
+</td>
+<td style="text-align:right;">
+38.32
+</td>
+<td style="text-align:right;">
+97.32
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+XASE
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+3.35
+</td>
+<td style="text-align:right;">
+11.20
+</td>
+<td style="text-align:right;">
+56.49
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+XNAS
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.56
+</td>
+<td style="text-align:right;">
+2.82
+</td>
+<td style="text-align:right;">
+19.12
+</td>
+<td style="text-align:right;">
+472.95
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+XNYS
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+10.19
+</td>
+<td style="text-align:right;">
+18.16
+</td>
+<td style="text-align:right;">
+38.08
+</td>
+<td style="text-align:right;">
+300.02
+</td>
+</tr>
+</tbody>
+</table>
+
+# Wrap-up
+
+To summarize everything I did in this vignette, I began by building
+functions to interact with some of the polygon.io’s API’s endpoints. I
+used the endpoints to create tables, data.frames, bar graphs,
+histograms, boxplots, and a scatterplot. I also created a variable for
+the averages of the quantitative variables. I was able summarize
+different quantitative variables by categorical variables.
+
+Most importantly, I hope my code helps you with interacting with APIs!
