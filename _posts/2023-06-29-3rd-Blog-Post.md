@@ -76,3 +76,4 @@ ggsurvplot(fit, data = dd, palette = "FFC0CB")
 
 ![image](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/b2a5c132-48b2-4bae-bb6b-2843a9d00f25)
 
+l
