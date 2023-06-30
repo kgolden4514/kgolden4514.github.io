@@ -67,7 +67,7 @@ corrplot(correlation, type = "lower", method = "number",
          diag = FALSE, tl.pos = "n", number.cex = 0.75)
 ```
 
-![](C:/R/Repos/kgolden4514.github.io/imagesPic_1.png)<!-- -->
+![](C:/R/Repos/kgolden4514.github.io/images/Pic_1.png)<!-- -->
 
 \# Weibull distribution  
 Because the data I use to do the weibull distributions in my internship
@@ -84,4 +84,4 @@ fit <- survfit( Surv(time, status) ~ 1, data = dd )
 ggsurvplot(fit, data = dd, palette = "FFC0CB")
 ```
 
-![](C:/R/Repos/kgolden4514.github.io/imagesPic_2.png)<!-- -->
+![](C:/R/Repos/kgolden4514.github.io/images/Pic_2.png)<!-- -->
