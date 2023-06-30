@@ -3,15 +3,6 @@
 Kristina Golden
 2023-06-30
 
-Create a new .Rmd file where you will write the content of the post.
-This should be in your \_Rmd folder and you’ll need to mimic much of
-what was done in blog post 2
-
-Write a post about what you consider the coolest thing you’ve learned
-about programming in R. Include an example of it (or at least the code
-to do it) in your post (for instance, if it was ggplot you could read in
-a data set and create a cool plot).
-
 Graphically, the coolest thing I have learned in R is the bubble graph
 that graphs the correlations between multiple variables. The bubble
 graph is a very interesting visual that allows the person doing the
