@@ -67,7 +67,8 @@ corrplot(correlation, type = "lower", method = "number",
          diag = FALSE, tl.pos = "n", number.cex = 0.75)
 ```
 
-![](2023-06-29-3rd-Blog-Post_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
+![](C:/R/Repos/kgolden4514.github.io/imagesPic_1.png)<!-- -->
+
 \# Weibull distribution  
 Because the data I use to do the weibull distributions in my internship
 are secured information, I have simulated one here.
@@ -83,4 +84,4 @@ fit <- survfit( Surv(time, status) ~ 1, data = dd )
 ggsurvplot(fit, data = dd, palette = "FFC0CB")
 ```
 
-![](2023-06-29-3rd-Blog-Post_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+![](C:/R/Repos/kgolden4514.github.io/imagesPic_2.png)<!-- -->
