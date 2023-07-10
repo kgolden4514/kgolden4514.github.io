@@ -5321,12 +5321,12 @@ Using the legend, we are able to see the correlations between variables,
 how strong the correlation is, and in what direction.
 
 ``` r
+shareshigh <- data_channel_train %>% select(shares) %>% mutate (shareshigh = (shares> mean(shares)))
 ggplot(shareshigh, aes(x=Rate.Pos, y=Rate.Neg,
                        color=Days_of_Week)) +
     geom_point(size=2)
 ```
-
-![](C:/Documents/Github/ST_558_Project_2/_Rmd/automations_test2_md/Entertainment_files/figure-gfm/scatterplot-1.png)<!-- -->
+![scatterplot-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/45269b53-ccd3-451b-8943-5844a3ce7f8e)
 
 Once seeing the correlation table and graph, it is possible to graph two
 variables on a scatterplot. This provides a visual of the linear
@@ -5437,16 +5437,14 @@ ggplot(shareshigh, aes(x = Weekday, fill = shareshigh)) +
   geom_bar(aes(y = (after_stat(count))/sum(after_stat(count)))) + xlab('Weekday or Weekend?') + 
   ylab('Relative Frequency')
 ```
-
-![](C:/Documents/Github/ST_558_Project_2/_Rmd/automations_test2_md/Entertainment_files/figure-gfm/weekday%20bar%20graph-1.png)<!-- -->
+![weekday bar graph-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/bc18a92c-ee01-43e4-9e4f-8744d4ca15a7)
 
 ``` r
 ggplot(shareshigh, aes(x = Days_of_Week, fill = shareshigh)) +
   geom_bar(aes(y = (after_stat(count))/sum(after_stat(count)))) + xlab('Day of the Week') + 
   ylab('Relative Frequency')
 ```
-
-![](C:/Documents/Github/ST_558_Project_2/_Rmd/automations_test2_md/Entertainment_files/figure-gfm/day%20of%20the%20week%20graph-1.png)<!-- -->
+![day of the week graph-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/fd225d2d-0fdc-45aa-81d2-95875072bf24)
 
 The above bar graphs are a visual representation of the contingency
 tables between weekends/weekdays and shareshigh and the days of the week
@@ -5496,8 +5494,7 @@ a+geom_histogram(color= "red", fill="blue")+ ggtitle("Shares histogram")
 
     ## `stat_bin()` using `bins = 30`. Pick better value with
     ## `binwidth`.
-
-![](C:/Documents/Github/ST_558_Project_2/_Rmd/automations_test2_md/Entertainment_files/figure-gfm/shares%20histogram-1.png)<!-- -->
+![shares histogram-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/24f5e960-d02d-41ac-add7-80f5b61a6d9d)
 
 Above we can see the frequency distribution of shares of the
 Entertainment data channel. We should always see a long tail to the
@@ -5512,8 +5509,7 @@ b<- ggplot(data_channel_train, aes(x=n.Title, y=shares))
 ## creates a bar chart with number of words in title and shares 
 b+ geom_col(fill="blue")+ ggtitle("Number of words in title vs shares") + labs(x="Number of words in title")
 ```
-
-![](C:/Documents/Github/ST_558_Project_2/_Rmd/automations_test2_md/Entertainment_files/figure-gfm/col%20graph-1.png)<!-- -->
+![col graph-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/9fa630e2-8853-49a5-be0f-72c39b2f95ab)
 
 In the above graph we are looking at the number of shares based on how
 many words are in the title of the article. if we see a large peak on at
@@ -5584,7 +5580,7 @@ g+ geom_point(aes(color=as.factor(Weekend))) +geom_smooth(method = lm) + ggtitle
 
     ## `geom_smooth()` using formula = 'y ~ x'
 
-![](C:/Documents/Github/ST_558_Project_2/_Rmd/automations_test2_md/Entertainment_files/figure-gfm/graph%20of%20shares%20with%20highest%20correlated%20var-1.png)<!-- -->
+![graph of shares with highest correlated var-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/56ed233d-de81-460a-b8f4-ad730cc9aa22)
 
 The above graph looks at the relationship between shares and the
 variable with the highest correlation for the Entertainment data
@@ -5714,8 +5710,7 @@ gbm_tree_cv <- train(shares ~ . , data = data_channel_train,
 ## plot to visualize parameters 
 plot(gbm_tree_cv)
 ```
-
-![](C:/Documents/Github/ST_558_Project_2/_Rmd/automations_test2_md/Entertainment_files/figure-gfm/boosted%20tree%20tuning-1.png)<!-- -->
+![boosted tree tuning-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/72dc9725-9459-49d4-8d46-db72000ead7a)
 
 ``` r
 ## test set prediction
