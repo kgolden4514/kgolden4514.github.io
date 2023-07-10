@@ -1,4 +1,4 @@
-Project 2
+Entertainment Project 2
 ================
 Kristina Golden and Demetrios Samaras
 2023-07-02
