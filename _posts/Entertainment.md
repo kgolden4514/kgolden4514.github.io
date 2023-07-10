@@ -5310,11 +5310,10 @@ strong correlation. If we have two variables with a high correlation, we
 might want to remove one of them to avoid too much multicollinearity.
 
 ``` r
-#Correlation graph for lifestyle_train
+#Correlation graph for
 correlation_graph(data_channel_train)
 ```
-
-![](C:/Documents/Github/ST_558_Project_2/_Rmd/automations_test2_md/Entertainment_files/figure-gfm/r%20params$DataChannel%20corr_graph-1.png)<!-- -->
+![r params$DataChannel corr_graph-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/0a17175c-30aa-4df3-88a3-243d525bd853)
 
 Because the correlation table above is large, it can be difficult to
 read. The correlation graph above gives a visual summary of the table.
