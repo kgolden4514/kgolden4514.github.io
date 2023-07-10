@@ -5494,6 +5494,7 @@ a+geom_histogram(color= "red", fill="blue")+ ggtitle("Shares histogram")
 
     ## `stat_bin()` using `bins = 30`. Pick better value with
     ## `binwidth`.
+
 ![shares histogram-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/24f5e960-d02d-41ac-add7-80f5b61a6d9d)
 
 Above we can see the frequency distribution of shares of the
