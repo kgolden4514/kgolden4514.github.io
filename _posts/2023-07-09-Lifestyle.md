@@ -5327,6 +5327,7 @@ ggplot(shareshigh, aes(x=Rate.Pos, y=Rate.Neg,
                        color=Days_of_Week)) +
     geom_point(size=2)
 ```
+
 ![scatterplot-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/29b4aea9-f3ab-4193-adba-86be4c3abe15)
 
 Once seeing the correlation table and graph, it is possible to graph two
@@ -5495,6 +5496,7 @@ a+geom_histogram(color= "red", fill="blue")+ ggtitle("Shares histogram")
 
     ## `stat_bin()` using `bins = 30`. Pick better value with
     ## `binwidth`.
+
 ![shares histogram-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/5d78f694-8d9f-467f-b349-66548eb24a2d)
 
 Above we can see the frequency distribution of shares of the Lifestyle
