@@ -5582,6 +5582,7 @@ g+ geom_point(aes(color=as.factor(Weekend))) +geom_smooth(method = lm) + ggtitle
 ```
 
     ## `geom_smooth()` using formula = 'y ~ x'
+
 ![graph of shares with highest correlated var-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/f60bed3a-2513-4310-b229-17a03e16db24)
 
 The above graph looks at the relationship between shares and the
