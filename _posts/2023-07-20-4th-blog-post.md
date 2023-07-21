@@ -96,4 +96,5 @@ bagRMSE <- sqrt(mean((bagPred-irisTest$Petal.Width)^2))
 varImpPlot(bagFit)
 ```
 
-![](3_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![unnamed-chunk-3-1](https://github.com/kgolden4514/kgolden4514.github.io/assets/134096245/43a4a814-278e-4633-a50c-bf6fd24d8a0c)
+
